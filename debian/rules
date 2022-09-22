@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+PYTHON3S:=$(shell py3versions -vr)
+
+%:
+	dh $@ --buildsystem=python_distutils --with python3,sphinxdoc
+
+override_dh_auto_clean:
+	rm -rf build
+	rm -rf docs/_build/
+
+override_dh_auto_build:
+	set -e ; set -x ; for i in $(PYTHON3S) ; do \
+		python$$i setup.py build ; \
+	done
+	make -C docs html
+
+override_dh_auto_install:
+	set -e && for pyvers in $(PYTHON3S); do \
+		python$$pyvers setup.py install --install-layout=deb \
+			--root $(CURDIR)/debian/python3-requests-oauthlib; \
+	done
